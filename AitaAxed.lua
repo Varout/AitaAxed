@@ -1,20 +1,21 @@
 --[[
 
 Copyright © 2025, Varrout of Phoenix
+GitHub: https://github.com/Varout/AitaAxed
 React: Copyright © 2016, Sammeh of Quetzalcoatl
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
 
-    * Redistributions of source code must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-    * Neither the name of AitaAxed nor the
-      names of its contributors may be used to endorse or promote products
-      derived from this software without specific prior written permission.
+  * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+  * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+  * Neither the name of AitaAxed nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -32,16 +33,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 _addon.name = 'AitaAxedDev'
 _addon.author = 'Varrout'
 _addon.version = '0.2'  --  Based off of React 1.6.0.0 by Sammeh of Quetzalcoatl
-_addon.commands = {'AitaAxedDev', 'aad'}
--- _addon.commands = {'AitaAxed', 'aa'}
+_addon.commands = {'AitaAxed', 'aa'}
 
 -- 0.1 Initial setup: Removed superfluous React functionality: addaction, listaction, removeaction
 --                    Removed categories from register_event('action') deicions: 4 (Finish casting spell), 8 (Start casting spell)
--- 0.2 First Iteration: Added ux/core for auto-centering the banner (A bit finnicky at times)
---                      Added support for Leshonn and Gartell hand state
---                      Added display_duration flag for when the banner disappears
--- 0.3 Second Iteraion (Planned): Ability to update settings from in-game
---                                Ability to show all available commands in-game
+-- 0.2 First Update: Added ux/core for auto-centering the banner (A bit finnicky at times)
+--                   Added support for Leshonn and Gartell hand state
+--                   Added display_duration flag for when the banner disappears
+-- 0.3 Second Update (Planned): Ability to update settings from in-game
+--                              Ability to show all available commands in-game
 
 require('actions')
 require('chat')
@@ -87,7 +87,6 @@ local ui_config = {
     Fonts = {
       'Consolas',
       'Lucida Console',
-      -- 'sans-serif'
     },
   },
   bg = {
@@ -101,10 +100,6 @@ local ui_config = {
 local ui_info_box
 local ui_info_shown = false
 local ui_display_start = nil
-
--- local language = 'english'
--- local area_name = nil
--- local is_sortie_area
 
 local STONE = 'Stone'
 local WATER = 'Water'
@@ -123,13 +118,6 @@ local ability_weaknesses_aita = {
   ['Flashflood']      = {['element'] = THUNDER, ['skillchain'] = LIGHT},
   ['Fulminous Smash'] = {['element'] = STONE,   ['skillchain'] = DARK},
   ['Eroding Flesh']   = {['element'] = AERO,    ['skillchain'] = LIGHT},
-
-  --  Testing
-  ['Toxic Spit']    = {['element'] = FIRE,    ['skillchain'] = LIGHT},
-  ['Cyclotail']     = {['element'] = WATER,   ['skillchain'] = DARK},
-  ['Geist Wall']    = {['element'] = THUNDER, ['skillchain'] = LIGHT},
-  ['Numbing Noise'] = {['element'] = STONE,   ['skillchain'] = DARK},
-  ['Nimble Snap']   = {['element'] = AERO,    ['skillchain'] = LIGHT},
 }
 
 --  Leshonn & Gartell
@@ -142,19 +130,11 @@ local ability_weaknesses_gartell = {
   ['Chokehold']      = WIND,
   ['Tearing Gust']   = WIND,
   ['Shrieking Gale'] = THUNDER, -- Changes to Thunder hands after this move
-
-  --  Testing
-  ['Toxic Spit']    = FIRE,
-  ['Cyclotail']     = WATER,
-  ['Geist Wall']    = THUNDER,
-  ['Numbing Noise'] = STONE,
-  ['Nimble Snap']   = WIND,
 }
 
 local aita_map = {
   ['Degei']    = ability_weaknesses_aita,
   ['Aita']     = ability_weaknesses_aita,
-  ['Apex Eft'] = ability_weaknesses_aita,
 }
 
 local gartell_map = {
@@ -230,7 +210,7 @@ function display_ui(raw_text, text_to_display)
     local display_text_length = ux.core.MeasureTextElement(ui_info_box).w
 
     ui_info_box:pos(
-      (windower_settings.ui_x_res - display_text_length) / 2.0,
+      (windower_settings.ui_x_res / 2.0 - display_text_length / 2.0),
       settings.y_pos
     )
   end
@@ -257,8 +237,6 @@ function reaction(actor, ability)
       raw_text, text_to_display = format_text_gartell(ability.en)
     end
 
-    -- windower.add_to_chat(123, actor.name .. ' | ' .. ability.en)
-    -- local text_to_display = format_display_text(actor.name, ability.en)
     display_ui(raw_text, text_to_display)
   end
 end
@@ -307,8 +285,7 @@ windower.register_event('addon command', function (...)
     local cmd = table.remove(splitup,1):lower()
 
     if cmd == 'r' then
-      windower.send_command('lua r aitaaxeddev')
-      -- windower.send_command('lua r aitaaxed')
+      windower.send_command('lua r aitaaxed')
     end
 end)
 
