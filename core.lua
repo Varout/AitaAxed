@@ -45,8 +45,8 @@ end
 ux.core.MeasureText = function(text, point_size, font)
     --  Remove any colour formatting from text
     local clean_text = text
-        :gsub("//cr", "")                                  --  remove //cr
-        :gsub("//cs%(%s*%d+%s*,%s*%d+%s*,%s*%d+%s*%)", "") --  remove //cs(r,g,b)
+        :gsub("\\cr", "")                                  --  remove \\cr
+        :gsub("\\cs%(%s*%d+%s*,%s*%d+%s*,%s*%d+%s*%)", "") --  remove \\cs(r,g,b)
 
     --  Note: Font is not used for now, since we only use fixed-width fonts.
     --  Maybe the Windower devs will fix the extents feature at some point...
