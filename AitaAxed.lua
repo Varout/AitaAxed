@@ -28,20 +28,20 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+Information on Development for Windower can be found here: https://github.com/Windower/Lua/wiki
+
 ]]
 
-_addon.name = 'AitaAxedDev'
+_addon.name = 'AitaAxed'
 _addon.author = 'Varrout'
-_addon.version = '0.2'  --  Based off of React 1.6.0.0 by Sammeh of Quetzalcoatl
+_addon.version = '0.2'
 _addon.commands = {'AitaAxed', 'aa'}
 
--- 0.1 Initial setup: Removed superfluous React functionality: addaction, listaction, removeaction
---                    Removed categories from register_event('action') deicions: 4 (Finish casting spell), 8 (Start casting spell)
--- 0.2 First Update: Added ux/core for auto-centering the banner (A bit finnicky at times)
---                   Added support for Leshonn and Gartell hand state
---                   Added display_duration flag for when the banner disappears
 -- 0.3 Second Update (Planned): Ability to update settings from in-game
 --                              Ability to show all available commands in-game
+--                              Ability to enable/disable coloured text (Done)
+--                              Ability to set 0 duration, meaning the text never disappears (Done)
+--                              "Clear" - Ability to clear the text box from the screen (Done)
 
 require('actions')
 require('chat')
@@ -52,49 +52,53 @@ require('sets')
 require('strings')
 require('tables')
 config = require('config')
+-- aahelp = require('AitaAxedHelp')
 files = require('files')
 res = require('resources')
 texts = require('texts')
 
 local defaults = {
-  auto_centre = true,
-  x_pos = 700,
-  y_pos = 110,
-  font_size = 50,
-  padding = 25,
-  --  75-100 Gives a nice transparency level for the background. Higher is darker
-  --  75 is similar transparency to the default for EquipViewer
-  bg_opacity = 75,
-  show_ability_name = true,
-  display_duration = 5
+  duration = nil,
+  show_ability_name = nil,
+  background = {
+    auto_centre = nil,
+    opacity = nil,
+    padding = nil,
+  },
+  font = {
+    size = nil,
+    use_colours = nil,
+  },
+  pos = {
+    x = nil,
+    y = nil,
+  },
 }
 
 local settings = config.load(defaults)
 
 local ui_config = {
-  pos = {
-    x = settings.x_pos,
-    y = settings.y_pos
+  bg = {
+    alpha = settings.background.opacity,
   },
-  padding = settings.padding,
+  flags = {},
+  padding = settings.background.padding,
+  pos = {
+    x = settings.pos.x,
+    y = settings.pos.y
+  },
   text = {
     font = 'Consolas',    --  Mono-spaced font looks much nicer
-    size = settings.font_size,
-    stroke = {
-      width = 2,
-      alpha = 255
-    },
     Fonts = {
       'Consolas',
       'Lucida Console',
     },
+    size = settings.font.size,
+    stroke = {
+      width = 2,
+      alpha = 255
+    },
   },
-  bg = {
-    --  75-100 Gives a nice transparency level for the background. Higher is darker
-    --  75 is similar transparency to the default for EquipViewer
-    alpha = settings.bg_opacity,
-  },
-  flags = {}
 }
 
 local ui_info_box
@@ -111,6 +115,37 @@ local THUNDER = 'Thunder'
 local LIGHT = 'Light'
 local DARK = 'Dark'
 
+-- --  Degei & Aita
+-- local ability_weaknesses_aita = {
+--   ['Icy Grasp']       = {['element'] = FIRE,    ['skillchain'] = LIGHT},
+--   ['Flaming Kick']    = {['element'] = WATER,   ['skillchain'] = DARK},
+--   ['Flashflood']      = {['element'] = THUNDER, ['skillchain'] = LIGHT},
+--   ['Fulminous Smash'] = {['element'] = STONE,   ['skillchain'] = DARK},
+--   ['Eroding Flesh']   = {['element'] = AERO,    ['skillchain'] = LIGHT},
+-- }
+
+-- --  Leshonn & Gartell
+-- local ability_weaknesses_gartell = {
+--   --  Thunder-based
+--   ['Zap']                  = THUNDER,
+--   ['Concussive Shock']     = THUNDER,
+--   ['Undulating Shockwave'] = WIND, --  Changes to Wind hands after this ability
+--   --  Wind-based
+--   ['Chokehold']      = WIND,
+--   ['Tearing Gust']   = WIND,
+--   ['Shrieking Gale'] = THUNDER, -- Changes to Thunder hands after this ability
+-- }
+
+-- local aita_map = {
+--   ['Degei']    = ability_weaknesses_aita,
+--   ['Aita']     = ability_weaknesses_aita,
+-- }
+
+-- local gartell_map = {
+--   ['Leshonn']  = ability_weaknesses_gartell,
+--   ['Gartell']  = ability_weaknesses_gartell,
+-- }
+
 --  Degei & Aita
 local ability_weaknesses_aita = {
   ['Icy Grasp']       = {['element'] = FIRE,    ['skillchain'] = LIGHT},
@@ -118,6 +153,13 @@ local ability_weaknesses_aita = {
   ['Flashflood']      = {['element'] = THUNDER, ['skillchain'] = LIGHT},
   ['Fulminous Smash'] = {['element'] = STONE,   ['skillchain'] = DARK},
   ['Eroding Flesh']   = {['element'] = AERO,    ['skillchain'] = LIGHT},
+
+  --  Testing
+  ['Toxic Spit']    = {['element'] = FIRE,    ['skillchain'] = LIGHT},
+  ['Cyclotail']     = {['element'] = WATER,   ['skillchain'] = DARK},
+  ['Geist Wall']    = {['element'] = THUNDER, ['skillchain'] = LIGHT},
+  ['Numbing Noise'] = {['element'] = STONE,   ['skillchain'] = DARK},
+  ['Nimble Snap']   = {['element'] = AERO,    ['skillchain'] = LIGHT},
 }
 
 --  Leshonn & Gartell
@@ -130,17 +172,26 @@ local ability_weaknesses_gartell = {
   ['Chokehold']      = WIND,
   ['Tearing Gust']   = WIND,
   ['Shrieking Gale'] = THUNDER, -- Changes to Thunder hands after this move
+
+  --  Testing
+  ['Toxic Spit']    = FIRE,
+  ['Cyclotail']     = WATER,
+  ['Geist Wall']    = THUNDER,
+  ['Numbing Noise'] = STONE,
+  ['Nimble Snap']   = WIND,
 }
 
 local aita_map = {
   ['Degei']    = ability_weaknesses_aita,
   ['Aita']     = ability_weaknesses_aita,
+  ['Apex Eft'] = ability_weaknesses_aita,
 }
 
 local gartell_map = {
   ['Leshonn']  = ability_weaknesses_gartell,
   ['Gartell']  = ability_weaknesses_gartell,
 }
+
 
 local text_colour_map = {
   [STONE]    = '(255,255,  0)',
@@ -166,8 +217,12 @@ local text_colour_map = {
 
 
 function apply_text_colour(text_to_display, colour_to_use)
-  local rbg_colour_code = text_colour_map[colour_to_use]
-  return '\\cs' .. rbg_colour_code .. text_to_display .. '\\cr'
+  if settings.font.use_colours then
+    local rbg_colour_code = text_colour_map[colour_to_use]
+    return '\\cs' .. rbg_colour_code .. text_to_display .. '\\cr'
+  else
+    return text_to_display
+  end
 end
 
 
@@ -175,69 +230,63 @@ function format_text_aita(ability_name)
   local element_str_nuke = ability_weaknesses_aita[ability_name]['element']
   local element_str_sc = ability_weaknesses_aita[ability_name]['skillchain']
 
-  local text_raw = ''
   local display_text = ''
 
   if settings.show_ability_name then
-    text_raw = text_raw .. ability_name .. ' | '
     display_text = display_text .. ability_name .. ' | '
   end
 
-  text_raw = text_raw .. element_str_nuke .. '/' .. element_str_sc
-  display_text = display_text .. apply_text_colour(element_str_nuke, element_str_nuke) .. '/' .. apply_text_colour(element_str_sc, element_str_sc)
+  display_text = display_text .. apply_text_colour(element_str_nuke, element_str_nuke) .. '/' .. element_str_sc
 
-  return text_raw, display_text
+  return display_text
 end
 
 
 function format_text_gartell(ability_name)
   local element_str = ability_weaknesses_gartell[ability_name]
 
-  local text_raw = 'Hands: ' .. element_str
   local display_text = 'Hands: ' .. apply_text_colour(element_str, element_str)
 
-  return text_raw, display_text
+  return display_text
 end
 
 
-function display_ui(raw_text, text_to_display)
+function display_ui(text_to_display)
   local windower_settings = windower.get_windower_settings()
 
   ui_info_box = texts.new(ui_config)
 
+  ui_info_box:text(text_to_display)
   if settings.auto_centre then
-    ui_info_box:text(raw_text)
     local display_text_length = ux.core.MeasureTextElement(ui_info_box).w
 
     ui_info_box:pos(
-      (windower_settings.ui_x_res / 2.0 - display_text_length / 2.0),
-      settings.y_pos
+      (windower_settings.ui_x_res - display_text_length) / 2.0,
+      settings.pos.y
     )
   end
 
-  ui_info_box:text(text_to_display)
   ui_info_box:show()
   ui_display_start = os.clock()
   ui_info_shown = true
 end
 
 
-function reaction(actor, ability)
-  windower.add_to_chat(111, actor.name)
-  if aita_map[actor.name] or gartell_map[actor.name] then
+function aita_axed(actor_name, ability_en)
+  if aita_map[actor_name] or gartell_map[actor_name] then
     if ui_info_box then
       ui_info_box:hide()
       ui_info_shown = false
     end
 
     local text_to_display = ''
-    if aita_map[actor.name] then
-      raw_text, text_to_display = format_text_aita(ability.en)
-    elseif gartell_map[actor.name] then
-      raw_text, text_to_display = format_text_gartell(ability.en)
+    if aita_map[actor_name] then
+      text_to_display = format_text_aita(ability_en)
+    elseif gartell_map[actor_name] then
+      text_to_display = format_text_gartell(ability_en)
     end
 
-    display_ui(raw_text, text_to_display)
+    display_ui(text_to_display)
   end
 end
 
@@ -253,9 +302,10 @@ windower.register_event('action',function (act)
   -- React to incidents where you're the primary target or any action by an NPC
   if actor and (actor.is_npc or primarytarget.name == self.name) and actor.name ~= self.name then
     if category == 7 then -- Begin JA http://dev.windower.net/doku.php?id=lua:api:events:category_07
-      if targets[1].actions[1].param ~= 0 and res.monster_abilities[targets[1].actions[1].param] then
-        ability = res.monster_abilities[targets[1].actions[1].param] -- .en
-        reaction(actor, ability)
+    -- if targets[1].actions[1].param ~= 0 and res.monster_abilities[targets[1].actions[1].param] then
+      ability = res.monster_abilities[targets[1].actions[1].param] -- .en
+      if ability.en then
+        aita_axed(actor.name, ability.en)
       end
     end
   end
@@ -264,8 +314,8 @@ end)
 
 windower.register_event('prerender', function()
   --  Handle time out of UI
-  if ui_info_shown and ui_display_start then
-    if os.clock() - ui_display_start > settings.display_duration then
+  if settings.duration ~= 0 and ui_info_shown and ui_display_start then
+    if os.clock() - ui_display_start > settings.duration then
       ui_info_box:hide()
       ui_info_shown = false
       ui_display_start = nil
@@ -276,16 +326,29 @@ end)
 
 --  Handle in-game console commands via AitaAxed or aa
 windower.register_event('addon command', function (...)
-    -- windower.debug('addon command')
+    -- windower.add_to_chat(100, 'addon command')
     local splitup = {...}
     if not splitup[1] then return end -- handles //aa
 
     for i, v in pairs(splitup) do splitup[i] = windower.from_shift_jis(windower.convert_auto_trans(v)) end
 
     local cmd = table.remove(splitup,1):lower()
+    local cmd_args = {select(2, ...)}
 
-    if cmd == 'r' then
+    -- settings.pos.x = tonumber(cmd_args[1])
+    -- settings.pos.y = tonumber(cmd_args[2])
+    -- config.save(settings)
+
+    -- windower.add_to_chat(100, cmd)
+    if cmd == 'reload' or cmd == 'r' then
       windower.send_command('lua r aitaaxed')
+    elseif cmd == 'clear' or cmd == 'c' then
+      print("Clearing chat box")
+      if ui_info_box then
+        ui_info_box:hide()
+      end
+    elseif cmd == 'help' or cmd == 'h' then
+      local help_with = cmd_args[1]
+      print(help_with)
     end
 end)
-
