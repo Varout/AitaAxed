@@ -45,75 +45,51 @@ _addon.commands = {'AitaAxed', 'aa'}
 
 require('actions')
 require('chat')
-require('core')  -- Developed by: https://github.com/Kaiconure/
 require('logger')
 require('pack')
 require('sets')
 require('strings')
 require('tables')
-config = require('config')
--- aahelp = require('AitaAxedHelp')
-files = require('files')
-res = require('resources')
-texts = require('texts')
+local config = require('config')
+local files = require('files')
+local res = require('resources')
+local texts = require('texts')
 
-local defaults = {
-  duration = nil,
-  show_ability_name = nil,
-  background = {
-    auto_centre = nil,
-    opacity = nil,
-    padding = nil,
-  },
-  font = {
-    size = nil,
-    use_colours = nil,
-  },
-  pos = {
-    x = nil,
-    y = nil,
-  },
-}
-
-local settings = config.load(defaults)
-
-local ui_config = {
-  bg = {
-    alpha = settings.background.opacity,
-  },
-  flags = {},
-  padding = settings.background.padding,
-  pos = {
-    x = settings.pos.x,
-    y = settings.pos.y
-  },
-  text = {
-    font = 'Consolas',    --  Mono-spaced font looks much nicer
-    Fonts = {
-      'Consolas',
-      'Lucida Console',
-    },
-    size = settings.font.size,
-    stroke = {
-      width = 2,
-      alpha = 255
-    },
-  },
-}
+require('scripts/core')  -- Developed by: https://github.com/Kaiconure/
+-- require('scripts/commands')
+require('scripts/objects')
 
 local ui_info_box
 local ui_info_shown = false
 local ui_display_start = nil
 
-local STONE = 'Stone'
-local WATER = 'Water'
-local AERO = 'Aero'
-local WIND = 'Wind'
-local FIRE = 'Fire'
-local BLIZZARD = 'Blizzard'
-local THUNDER = 'Thunder'
-local LIGHT = 'Light'
-local DARK = 'Dark'
+local settings = config.load(aa.objects.get_settings_defaults())
+local ui_config = aa.objects.get_ui_config(settings)
+
+-- local STONE = aa.objects.get_stone()
+-- local WATER = aa.objects.get_water()
+-- local WIND = aa.objects.get_wind()
+-- local AERO = aa.objects.get_aero()
+-- local FIRE = aa.objects.get_fire()
+-- local BLIZZARD = aa.objects.get_blizzard()
+-- local THUNDER = aa.objects.get_thunder()
+-- local LIGHT = aa.objects.get_light()
+-- local DARK = aa.objects.get_dark()
+local element_colour_map = aa.objects.get_element_colour_map()
+
+local ability_weaknesses_aita = aa.objects.get_ability_weaknesses_aita()
+local ability_weaknesses_gartell = aa.objects.get_ability_weaknesses_gartell()
+local aita_map = aa.objects.get_aita_map()
+local gartell_map = aa.objects.get_gartell_map()
+
+-- local STONE = 'Stone'
+-- local WATER = 'Water'
+-- local WIND = 'Wind'
+-- local FIRE = 'Fire'
+-- local BLIZZARD = 'Blizzard'
+-- local THUNDER = 'Thunder'
+-- local LIGHT = 'Light'
+-- local DARK = 'Dark'
 
 -- --  Degei & Aita
 -- local ability_weaknesses_aita = {
@@ -121,7 +97,7 @@ local DARK = 'Dark'
 --   ['Flaming Kick']    = {['element'] = WATER,   ['skillchain'] = DARK},
 --   ['Flashflood']      = {['element'] = THUNDER, ['skillchain'] = LIGHT},
 --   ['Fulminous Smash'] = {['element'] = STONE,   ['skillchain'] = DARK},
---   ['Eroding Flesh']   = {['element'] = AERO,    ['skillchain'] = LIGHT},
+--   ['Eroding Flesh']   = {['element'] = WIND,    ['skillchain'] = LIGHT},
 -- }
 
 -- --  Leshonn & Gartell
@@ -146,64 +122,58 @@ local DARK = 'Dark'
 --   ['Gartell']  = ability_weaknesses_gartell,
 -- }
 
---  Degei & Aita
-local ability_weaknesses_aita = {
-  ['Icy Grasp']       = {['element'] = FIRE,    ['skillchain'] = LIGHT},
-  ['Flaming Kick']    = {['element'] = WATER,   ['skillchain'] = DARK},
-  ['Flashflood']      = {['element'] = THUNDER, ['skillchain'] = LIGHT},
-  ['Fulminous Smash'] = {['element'] = STONE,   ['skillchain'] = DARK},
-  ['Eroding Flesh']   = {['element'] = AERO,    ['skillchain'] = LIGHT},
+-- --  Degei & Aita
+-- local ability_weaknesses_aita = {
+--   ['Icy Grasp']       = {['element'] = FIRE,    ['skillchain'] = LIGHT},
+--   ['Flaming Kick']    = {['element'] = WATER,   ['skillchain'] = DARK},
+--   ['Flashflood']      = {['element'] = THUNDER, ['skillchain'] = LIGHT},
+--   ['Fulminous Smash'] = {['element'] = STONE,   ['skillchain'] = DARK},
+--   ['Eroding Flesh']   = {['element'] = AERO,    ['skillchain'] = LIGHT},
 
-  --  Testing
-  ['Toxic Spit']    = {['element'] = FIRE,    ['skillchain'] = LIGHT},
-  ['Cyclotail']     = {['element'] = WATER,   ['skillchain'] = DARK},
-  ['Geist Wall']    = {['element'] = THUNDER, ['skillchain'] = LIGHT},
-  ['Numbing Noise'] = {['element'] = STONE,   ['skillchain'] = DARK},
-  ['Nimble Snap']   = {['element'] = AERO,    ['skillchain'] = LIGHT},
-}
+--   --  Testing
+--   ['Toxic Spit']    = {['element'] = FIRE,    ['skillchain'] = LIGHT},
+--   ['Cyclotail']     = {['element'] = WATER,   ['skillchain'] = DARK},
+--   ['Geist Wall']    = {['element'] = THUNDER, ['skillchain'] = LIGHT},
+--   ['Numbing Noise'] = {['element'] = STONE,   ['skillchain'] = DARK},
+--   ['Nimble Snap']   = {['element'] = AERO,    ['skillchain'] = LIGHT},
+-- }
 
---  Leshonn & Gartell
-local ability_weaknesses_gartell = {
-  --  Thunder-based
-  ['Zap']                  = THUNDER,
-  ['Concussive Shock']     = THUNDER,
-  ['Undulating Shockwave'] = WIND, --  Changes to Wind hands after this move
-  --  Wind-based
-  ['Chokehold']      = WIND,
-  ['Tearing Gust']   = WIND,
-  ['Shrieking Gale'] = THUNDER, -- Changes to Thunder hands after this move
+-- --  Leshonn & Gartell
+-- local ability_weaknesses_gartell = {
+--   ['Undulating Shockwave'] = WIND,    -- Changes to Wind hands after this move
+--   ['Shrieking Gale']       = THUNDER, -- Changes to Thunder hands after this move
 
-  --  Testing
-  ['Toxic Spit']    = FIRE,
-  ['Cyclotail']     = WATER,
-  ['Geist Wall']    = THUNDER,
-  ['Numbing Noise'] = STONE,
-  ['Nimble Snap']   = WIND,
-}
+--   --  Testing
+--   ['Toxic Spit']    = FIRE,
+--   ['Cyclotail']     = WATER,
+--   ['Geist Wall']    = THUNDER,
+--   ['Numbing Noise'] = STONE,
+--   ['Nimble Snap']   = WIND,
+-- }
 
-local aita_map = {
-  ['Degei']    = ability_weaknesses_aita,
-  ['Aita']     = ability_weaknesses_aita,
-  ['Apex Eft'] = ability_weaknesses_aita,
-}
+-- local aita_map = {
+--   ['Degei']    = ability_weaknesses_aita,
+--   ['Aita']     = ability_weaknesses_aita,
+--   ['Apex Eft'] = ability_weaknesses_aita,
+-- }
 
-local gartell_map = {
-  ['Leshonn']  = ability_weaknesses_gartell,
-  ['Gartell']  = ability_weaknesses_gartell,
-}
+-- local gartell_map = {
+--   ['Leshonn']  = ability_weaknesses_gartell,
+--   ['Gartell']  = ability_weaknesses_gartell,
+-- }
 
 
-local text_colour_map = {
-  [STONE]    = '(255,255,  0)',
-  [WATER]    = '(  0,  0,255)',
-  [AERO]     = '(  0,255,128)',
-  [WIND]     = '(  0,255,128)',
-  [FIRE]     = '(255,  0,  0)',
-  [BLIZZARD] = '(  0,255,255)',
-  [THUNDER]  = '(255, 85,230)',
-  [LIGHT]    = '(255,255,255)',
-  [DARK]     = '(255,255,255)',
-}
+-- local text_colour_map = {
+--   [STONE]    = '(255,255,  0)',
+--   [WATER]    = '(  0,  0,255)',
+--   [AERO]     = '(  0,255,128)',
+--   [WIND]     = '(  0,255,128)',
+--   [FIRE]     = '(255,  0,  0)',
+--   [BLIZZARD] = '(  0,255,255)',
+--   [THUNDER]  = '(255, 85,230)',
+--   [LIGHT]    = '(255,255,255)',
+--   [DARK]     = '(255,255,255)',
+-- }
 
 
 -- function refresh_ffxi_info()
@@ -218,7 +188,7 @@ local text_colour_map = {
 
 function apply_text_colour(text_to_display, colour_to_use)
   if settings.font.use_colours then
-    local rbg_colour_code = text_colour_map[colour_to_use]
+    local rbg_colour_code = element_colour_map[colour_to_use]
     return '\\cs' .. rbg_colour_code .. text_to_display .. '\\cr'
   else
     return text_to_display
@@ -228,7 +198,7 @@ end
 
 function format_text_aita(ability_name)
   local element_str_nuke = ability_weaknesses_aita[ability_name]['element']
-  local element_str_sc = ability_weaknesses_aita[ability_name]['skillchain']
+  local element_str_sc   = ability_weaknesses_aita[ability_name]['skillchain']
 
   local display_text = ''
 
@@ -273,12 +243,16 @@ end
 
 
 function aita_axed(actor_name, ability_en)
-  if aita_map[actor_name] or gartell_map[actor_name] then
+  if (aita_map[actor_name]    and ability_weaknesses_aita[ability_en]) or
+     (gartell_map[actor_name] and ability_weaknesses_gartell[ability_en]) then
+
+    -- If the UI is up, hide it
     if ui_info_box then
       ui_info_box:hide()
       ui_info_shown = false
     end
 
+    -- Get the text to display
     local text_to_display = ''
     if aita_map[actor_name] then
       text_to_display = format_text_aita(ability_en)
@@ -286,12 +260,13 @@ function aita_axed(actor_name, ability_en)
       text_to_display = format_text_gartell(ability_en)
     end
 
+    -- Display the text, I think
     display_ui(text_to_display)
   end
 end
 
 
-windower.register_event('action',function (act)
+windower.register_event('action', function (act)
   -- info here: http://dev.windower.net/doku.php?id=lua:api:events:action
   local actor = windower.ffxi.get_mob_by_id(act.actor_id)
   local self = windower.ffxi.get_player()
@@ -299,14 +274,13 @@ windower.register_event('action',function (act)
   local param = act.param
   local targets = act.targets
   local primarytarget = windower.ffxi.get_mob_by_id(targets[1].id)
+
   -- React to incidents where you're the primary target or any action by an NPC
-  if actor and (actor.is_npc or primarytarget.name == self.name) and actor.name ~= self.name then
-    if category == 7 then -- Begin JA http://dev.windower.net/doku.php?id=lua:api:events:category_07
-    -- if targets[1].actions[1].param ~= 0 and res.monster_abilities[targets[1].actions[1].param] then
-      ability = res.monster_abilities[targets[1].actions[1].param] -- .en
-      if ability.en then
-        aita_axed(actor.name, ability.en)
-      end
+  if actor and actor.is_npc and actor.name ~= self.name and category == 7 then
+  -- if actor and (actor.is_npc or primarytarget.name == self.name) and actor.name ~= self.name and category == 7 then
+    ability = res.monster_abilities[targets[1].actions[1].param] -- .en
+    if ability and ability.en then
+      aita_axed(actor.name, ability.en)
     end
   end
 end)
@@ -342,7 +316,7 @@ windower.register_event('addon command', function (...)
     -- windower.add_to_chat(100, cmd)
     if cmd == 'reload' or cmd == 'r' then
       windower.send_command('lua r aitaaxed')
-    elseif cmd == 'clear' or cmd == 'c' then
+    elseif cmd == 'clear' then
       print("Clearing chat box")
       if ui_info_box then
         ui_info_box:hide()
@@ -350,5 +324,6 @@ windower.register_event('addon command', function (...)
     elseif cmd == 'help' or cmd == 'h' then
       local help_with = cmd_args[1]
       print(help_with)
+    elseif aa.help.contains_update_function(cmd) then
     end
 end)
