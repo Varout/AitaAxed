@@ -37,12 +37,6 @@ _addon.author = 'Varrout'
 _addon.version = '0.2'
 _addon.commands = {'AitaAxed', 'aa'}
 
--- 0.3 Second Update (Planned): Ability to update settings from in-game
---                              Ability to show all available commands in-game
---                              Ability to enable/disable coloured text (Done)
---                              Ability to set 0 duration, meaning the text never disappears (Done)
---                              "Clear" - Ability to clear the text box from the screen (Done)
-
 require('actions')
 require('chat')
 require('logger')
@@ -66,124 +60,12 @@ local ui_display_start = nil
 local settings = config.load(aa.objects.get_settings_defaults())
 local ui_config = aa.objects.get_ui_config(settings)
 
--- local STONE = aa.objects.get_stone()
--- local WATER = aa.objects.get_water()
--- local WIND = aa.objects.get_wind()
--- local AERO = aa.objects.get_aero()
--- local FIRE = aa.objects.get_fire()
--- local BLIZZARD = aa.objects.get_blizzard()
--- local THUNDER = aa.objects.get_thunder()
--- local LIGHT = aa.objects.get_light()
--- local DARK = aa.objects.get_dark()
 local element_colour_map = aa.objects.get_element_colour_map()
 
 local ability_weaknesses_aita = aa.objects.get_ability_weaknesses_aita()
 local ability_weaknesses_gartell = aa.objects.get_ability_weaknesses_gartell()
 local aita_map = aa.objects.get_aita_map()
 local gartell_map = aa.objects.get_gartell_map()
-
--- local STONE = 'Stone'
--- local WATER = 'Water'
--- local WIND = 'Wind'
--- local FIRE = 'Fire'
--- local BLIZZARD = 'Blizzard'
--- local THUNDER = 'Thunder'
--- local LIGHT = 'Light'
--- local DARK = 'Dark'
-
--- --  Degei & Aita
--- local ability_weaknesses_aita = {
---   ['Icy Grasp']       = {['element'] = FIRE,    ['skillchain'] = LIGHT},
---   ['Flaming Kick']    = {['element'] = WATER,   ['skillchain'] = DARK},
---   ['Flashflood']      = {['element'] = THUNDER, ['skillchain'] = LIGHT},
---   ['Fulminous Smash'] = {['element'] = STONE,   ['skillchain'] = DARK},
---   ['Eroding Flesh']   = {['element'] = WIND,    ['skillchain'] = LIGHT},
--- }
-
--- --  Leshonn & Gartell
--- local ability_weaknesses_gartell = {
---   --  Thunder-based
---   ['Zap']                  = THUNDER,
---   ['Concussive Shock']     = THUNDER,
---   ['Undulating Shockwave'] = WIND, --  Changes to Wind hands after this ability
---   --  Wind-based
---   ['Chokehold']      = WIND,
---   ['Tearing Gust']   = WIND,
---   ['Shrieking Gale'] = THUNDER, -- Changes to Thunder hands after this ability
--- }
-
--- local aita_map = {
---   ['Degei']    = ability_weaknesses_aita,
---   ['Aita']     = ability_weaknesses_aita,
--- }
-
--- local gartell_map = {
---   ['Leshonn']  = ability_weaknesses_gartell,
---   ['Gartell']  = ability_weaknesses_gartell,
--- }
-
--- --  Degei & Aita
--- local ability_weaknesses_aita = {
---   ['Icy Grasp']       = {['element'] = FIRE,    ['skillchain'] = LIGHT},
---   ['Flaming Kick']    = {['element'] = WATER,   ['skillchain'] = DARK},
---   ['Flashflood']      = {['element'] = THUNDER, ['skillchain'] = LIGHT},
---   ['Fulminous Smash'] = {['element'] = STONE,   ['skillchain'] = DARK},
---   ['Eroding Flesh']   = {['element'] = AERO,    ['skillchain'] = LIGHT},
-
---   --  Testing
---   ['Toxic Spit']    = {['element'] = FIRE,    ['skillchain'] = LIGHT},
---   ['Cyclotail']     = {['element'] = WATER,   ['skillchain'] = DARK},
---   ['Geist Wall']    = {['element'] = THUNDER, ['skillchain'] = LIGHT},
---   ['Numbing Noise'] = {['element'] = STONE,   ['skillchain'] = DARK},
---   ['Nimble Snap']   = {['element'] = AERO,    ['skillchain'] = LIGHT},
--- }
-
--- --  Leshonn & Gartell
--- local ability_weaknesses_gartell = {
---   ['Undulating Shockwave'] = WIND,    -- Changes to Wind hands after this move
---   ['Shrieking Gale']       = THUNDER, -- Changes to Thunder hands after this move
-
---   --  Testing
---   ['Toxic Spit']    = FIRE,
---   ['Cyclotail']     = WATER,
---   ['Geist Wall']    = THUNDER,
---   ['Numbing Noise'] = STONE,
---   ['Nimble Snap']   = WIND,
--- }
-
--- local aita_map = {
---   ['Degei']    = ability_weaknesses_aita,
---   ['Aita']     = ability_weaknesses_aita,
---   ['Apex Eft'] = ability_weaknesses_aita,
--- }
-
--- local gartell_map = {
---   ['Leshonn']  = ability_weaknesses_gartell,
---   ['Gartell']  = ability_weaknesses_gartell,
--- }
-
-
--- local text_colour_map = {
---   [STONE]    = '(255,255,  0)',
---   [WATER]    = '(  0,  0,255)',
---   [AERO]     = '(  0,255,128)',
---   [WIND]     = '(  0,255,128)',
---   [FIRE]     = '(255,  0,  0)',
---   [BLIZZARD] = '(  0,255,255)',
---   [THUNDER]  = '(255, 85,230)',
---   [LIGHT]    = '(255,255,255)',
---   [DARK]     = '(255,255,255)',
--- }
-
-
--- function refresh_ffxi_info()
---     local info = windower.ffxi.get_info()
---     for i,v in pairs(info) do
---         if i == 'zone' and res.zones[v] then
---             area_name = res.zones[v][language]
---         end
---     end
--- end
 
 
 function apply_text_colour(text_to_display, colour_to_use)
@@ -277,7 +159,6 @@ windower.register_event('action', function (act)
 
   -- React to incidents where you're the primary target or any action by an NPC
   if actor and actor.is_npc and actor.name ~= self.name and category == 7 then
-  -- if actor and (actor.is_npc or primarytarget.name == self.name) and actor.name ~= self.name and category == 7 then
     ability = res.monster_abilities[targets[1].actions[1].param] -- .en
     if ability and ability.en then
       aita_axed(actor.name, ability.en)
@@ -300,7 +181,6 @@ end)
 
 --  Handle in-game console commands via AitaAxed or aa
 windower.register_event('addon command', function (...)
-    -- windower.add_to_chat(100, 'addon command')
     local splitup = {...}
     if not splitup[1] then return end -- handles //aa
 
@@ -309,11 +189,6 @@ windower.register_event('addon command', function (...)
     local cmd = table.remove(splitup,1):lower()
     local cmd_args = {select(2, ...)}
 
-    -- settings.pos.x = tonumber(cmd_args[1])
-    -- settings.pos.y = tonumber(cmd_args[2])
-    -- config.save(settings)
-
-    -- windower.add_to_chat(100, cmd)
     if cmd == 'reload' or cmd == 'r' then
       windower.send_command('lua r aitaaxed')
     elseif cmd == 'clear' then
