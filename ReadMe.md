@@ -36,8 +36,8 @@ When using an ability which causes hands to switch from Thunder to Wind or vice 
 | -------------|------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | `auto_centre`  | `Boolean`     | `true`  | Automatically finds the middle of your game window to display the text box. If true, ignores the value set for `x_pos`.                      |
 | `duration`     | `Integer`     | `10`    | The duration that the dialogue box stays on screen in seconds after the last ability.                                 |
+| `padding`  | `Integer`         | `25`    | The space around the text box that has a background. The value applies to top, botton, left, and right.                                      |
 | `show_ability_name` | `Boolean` | `false` | For Degei & Aita, toggles whether or not the name of the ability used is also shown on screen.                                               |
-| background: `padding`  | `Integer`         | `25`    | The space around the text box that has a background. The value applies to top, botton, left, and right.                                      |
 | background: `opacity`  | `Integer`      | `75`    | The background opacity of the text box. A value of 75 seems to be the same as the default value for EquipViewer. Higher is less transparent |
 | font: `size` | `Integer` | `50` | The font size. |
 | font: `use_colours` | `Boolean` | `true` | When `true`, the elemental nukes are coloured with the corresponding colour. Stone: yellow, Water: blue, etc. When `false`, all text is white. |

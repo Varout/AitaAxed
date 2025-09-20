@@ -2,16 +2,16 @@
 <settings>
     <global>
         <auto_centre>true</auto_centre>
-        <duration>8</duration>
+        <duration>10</duration>
         <show_ability_name>false</show_ability_name> <!-- For Degei & Aita, toggles whether to show ability name -->
         <background>
-            <padding>25</padding>
             <opacity>75</opacity> <!-- 75 is the same as the default value for EquipViewer -->
         </background>
         <font>
             <size>50</size>
             <use_colours>true</use_colours>
         </font>
+        <padding>25</padding>
         <pos>
             <x>700</x> <!-- Ignored if auto_centre is true -->
             <y>100</y>
