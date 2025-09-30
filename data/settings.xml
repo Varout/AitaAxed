@@ -2,7 +2,7 @@
 <settings>
     <global>
         <auto_centre>true</auto_centre>
-        <duration>10</duration>
+        <duration>18</duration>
         <show_ability_name>false</show_ability_name> <!-- For Degei & Aita, toggles whether to show ability name -->
         <background>
             <opacity>75</opacity> <!-- 75 is the same as the default value for EquipViewer -->

@@ -34,8 +34,11 @@ Information on Development for Windower can be found here: https://github.com/Wi
 
 _addon.name = 'AitaAxed'
 _addon.author = 'Varrout'
-_addon.version = '0.2'
+_addon.version = '0.4'
 _addon.commands = {'AitaAxed', 'aa'}
+
+-- 0.5 (Planned): Ability to update settings from in-game
+--                Set up job-specific settings
 
 require('actions')
 require('chat')
@@ -49,8 +52,9 @@ local files = require('files')
 local res = require('resources')
 local texts = require('texts')
 
+--  AitaAxed Included Scripts
 require('scripts/core')  -- Developed by: https://github.com/Kaiconure/
--- require('scripts/commands')
+require('scripts/help')
 require('scripts/objects')
 
 local ui_info_box
@@ -83,7 +87,6 @@ function format_text_aita(ability_name)
   local element_str_sc   = ability_weaknesses_aita[ability_name]['skillchain']
 
   local display_text = ''
-
   if settings.show_ability_name then
     display_text = display_text .. ability_name .. ' | '
   end
@@ -96,7 +99,6 @@ end
 
 function format_text_gartell(ability_name)
   local element_str = ability_weaknesses_gartell[ability_name]
-
   local display_text = 'Hands: ' .. apply_text_colour(element_str, element_str)
 
   return display_text
@@ -107,8 +109,8 @@ function display_ui(text_to_display)
   local windower_settings = windower.get_windower_settings()
 
   ui_info_box = texts.new(ui_config)
-
   ui_info_box:text(text_to_display)
+
   if settings.auto_centre then
     local display_text_length = ux.core.MeasureTextElement(ui_info_box).w
 
@@ -124,6 +126,23 @@ function display_ui(text_to_display)
 end
 
 
+function show_test_text()
+  local colour = aa.objects.get_random_colour()
+
+  if ui_info_box then
+    ui_info_box:hide()
+    ui_info_shown = false
+  end
+
+  local test_text = 'Hello ' .. apply_text_colour('World', colour)
+  display_ui(test_text)
+end
+
+
+--[[
+  The equivalent to main(), just don't make it call itself
+  It's not supposed to be recursive
+]]
 function aita_axed(actor_name, ability_en)
   if (aita_map[actor_name]    and ability_weaknesses_aita[ability_en]) or
      (gartell_map[actor_name] and ability_weaknesses_gartell[ability_en]) then
@@ -142,12 +161,17 @@ function aita_axed(actor_name, ability_en)
       text_to_display = format_text_gartell(ability_en)
     end
 
-    -- Display the text, I think
     display_ui(text_to_display)
   end
 end
 
 
+--[[
+  Windower Registered Events
+  - action: for the main trigger
+  - prerender: for the timer
+  - addon command: for custom commands
+]]
 windower.register_event('action', function (act)
   -- info here: http://dev.windower.net/doku.php?id=lua:api:events:action
   local actor = windower.ffxi.get_mob_by_id(act.actor_id)
@@ -189,16 +213,33 @@ windower.register_event('addon command', function (...)
     local cmd = table.remove(splitup,1):lower()
     local cmd_args = {select(2, ...)}
 
-    if cmd == 'reload' or cmd == 'r' then
+    if cmd == 'help' or cmd == 'h' then
+      --  HELP
+      local help_with = cmd_args[1]
+      if help_with then
+        --  Specific function
+        print(aa.help.get_help_for(help_with))
+      else
+        --  Everything
+        print(aa.help.show_available_commands())
+      end
+    elseif aa.help.contains_update_function(cmd) then
+      --  Functions with updates
+      print(cmd)
+    elseif cmd == 'reload' or cmd == 'r' then
+      --  Reload AitaAxed
       windower.send_command('lua r aitaaxed')
-    elseif cmd == 'clear' then
-      print("Clearing chat box")
+    elseif cmd == 'unload' or cmd == 'u' then
+      --  Unload AitaAxed
+      windower.send_command('lua u aitaaxed')
+    elseif cmd == 'clear' or cmd == 'c' then
+      --  Clear dialogue box
+      print("Clearing dialogue box")
       if ui_info_box then
         ui_info_box:hide()
       end
-    elseif cmd == 'help' or cmd == 'h' then
-      local help_with = cmd_args[1]
-      print(help_with)
-    elseif aa.help.contains_update_function(cmd) then
+    elseif cmd == 'test' then
+      --  Show test text for positioning
+      show_test_text()
     end
 end)
