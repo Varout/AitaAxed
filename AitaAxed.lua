@@ -139,6 +139,19 @@ function display_ui(text_to_display)
 end
 
 
+function show_test_text()
+  local colour = aa.objects.get_random_colour()
+  print(colour)
+  if ui_info_box then
+    ui_info_box:hide()
+    ui_info_shown = false
+  end
+
+  local test_text = 'Hello ' .. apply_text_colour('World', colour)
+  display_ui(test_text)
+end
+
+
 --[[
   The equivalent to main(), just don't make it call itself
   It's not supposed to be recursive
@@ -161,7 +174,6 @@ function aita_axed(actor_name, ability_en)
       text_to_display = format_text_gartell(ability_en)
     end
 
-    -- Display the text, I think
     display_ui(text_to_display)
   end
 end
@@ -221,20 +233,33 @@ windower.register_event('addon command', function (...)
     -- config.save(settings)
 
     -- windower.add_to_chat(100, cmd)
-    if cmd == 'reload' or cmd == 'r' then
+    if cmd == 'help' or cmd == 'h' then
+      --  HELP
+      local help_with = cmd_args[1]
+      if help_with then
+        --  Specific function
+        print(aa.help.get_help_for(help_with))
+      else
+        --  Everything
+        print(aa.help.show_available_commands())
+      end
+    elseif aa.help.contains_update_function(cmd) then
+      --  Functions with updates
+      print(cmd)
+    elseif cmd == 'reload' or cmd == 'r' then
+      --  Reload AitaAxed
       windower.send_command('lua r aitaaxed')
-    elseif cmd == 'clear' then
+    elseif cmd == 'unload' or cmd == 'u' then
+      --  Unload AitaAxed
+      windower.send_command('lua u aitaaxed')
+    elseif cmd == 'clear' or cmd == 'c' then
+      --  Clear dialogue box
       print("Clearing dialogue box")
       if ui_info_box then
         ui_info_box:hide()
       end
-    elseif cmd == 'help' or cmd == 'h' then
-      local help_with = cmd_args[1]
-      if help_with then
-        print(aa.help.get_help_for(help_with))
-      else
-        print(aa.help.show_available_commands())
-      end
-    elseif aa.help.contains_update_function(cmd) then
+    elseif cmd == 'test' then
+      --  Show test text for positioning
+      show_test_text()
     end
 end)
