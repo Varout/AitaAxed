@@ -53,8 +53,11 @@ When using an ability which causes hands to switch from Thunder to Wind or vice 
 
 | Option      | Alias |          Description                                                                                                              |
 | -------------|------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `help`   | `h` | Shows all available help commands if used by itself with no arguments (`aa h`) or shows help on a specific command if used with an argument.<br />Example: `aa help clear` or `aa h c` will show information on the `aa clear` command |
+| `clear`  | `c` | Force clear the screen if the text panel gets stuck on the screen.<br />Example: `aa clear` |
+| `test`   | n/a | Shows a dialogue box on the screen with the text "Hellow World" with the settings from your `settings.xml` file. If you have colourful text turned on, then "World" will appear in a random colour. Note: This seems to complain if you keep on spamming the command and it stops responding. |
 | `reload` | `r` | Reloads the add-on as if you typed `lua r AitaAxed`.<br />Example: `aa r` |
-| `clear`  | n/a | Force clear the screen if the text panel gets stuck on the screen.<br />Example: `aa clear` |
+| `unload` | `u` | Unloads the add-on as if you types `lua u AitaAxed`.<br />Example: `aa u` |
 | `auto_centre` (soon) | `ac` | Allows setting the value for `auto_centre`.<br />Example: `aa auto_centre false` |
 | `duration` (soon) | `d` | Sets the duration value.<br />Example: `aa duration 5` |
 | `show_name` (soon) | `sn` | Sets the value for `show_ability_name`<br />Example: `aa sn true` |
