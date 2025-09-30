@@ -34,8 +34,11 @@ Information on Development for Windower can be found here: https://github.com/Wi
 
 _addon.name = 'AitaAxed'
 _addon.author = 'Varrout'
-_addon.version = '0.2'
+_addon.version = '0.4'
 _addon.commands = {'AitaAxed', 'aa'}
+
+-- 0.4 Second Update (Planned): Ability to update settings from in-game
+--                              Ability to show all available commands in-game
 
 require('actions')
 require('chat')
@@ -49,8 +52,9 @@ local files = require('files')
 local res = require('resources')
 local texts = require('texts')
 
+--  AitaAxed Included Scripts
 require('scripts/core')  -- Developed by: https://github.com/Kaiconure/
--- require('scripts/commands')
+require('scripts/help')
 require('scripts/objects')
 
 local ui_info_box
@@ -66,6 +70,17 @@ local ability_weaknesses_aita = aa.objects.get_ability_weaknesses_aita()
 local ability_weaknesses_gartell = aa.objects.get_ability_weaknesses_gartell()
 local aita_map = aa.objects.get_aita_map()
 local gartell_map = aa.objects.get_gartell_map()
+
+
+
+-- function refresh_ffxi_info()
+--     local info = windower.ffxi.get_info()
+--     for i,v in pairs(info) do
+--         if i == 'zone' and res.zones[v] then
+--             area_name = res.zones[v][language]
+--         end
+--     end
+-- end
 
 
 function apply_text_colour(text_to_display, colour_to_use)
@@ -124,6 +139,10 @@ function display_ui(text_to_display)
 end
 
 
+--[[
+  The equivalent to main(), just don't make it call itself
+  It's not supposed to be recursive
+]]
 function aita_axed(actor_name, ability_en)
   if (aita_map[actor_name]    and ability_weaknesses_aita[ability_en]) or
      (gartell_map[actor_name] and ability_weaknesses_gartell[ability_en]) then
@@ -148,6 +167,12 @@ function aita_axed(actor_name, ability_en)
 end
 
 
+--[[
+  Windower Registered Events
+  - action: for the main trigger
+  - prerender: for the timer
+  - addon command: for custom commands
+]]
 windower.register_event('action', function (act)
   -- info here: http://dev.windower.net/doku.php?id=lua:api:events:action
   local actor = windower.ffxi.get_mob_by_id(act.actor_id)
@@ -159,6 +184,7 @@ windower.register_event('action', function (act)
 
   -- React to incidents where you're the primary target or any action by an NPC
   if actor and actor.is_npc and actor.name ~= self.name and category == 7 then
+  -- if actor and (actor.is_npc or primarytarget.name == self.name) and actor.name ~= self.name and category == 7 then
     ability = res.monster_abilities[targets[1].actions[1].param] -- .en
     if ability and ability.en then
       aita_axed(actor.name, ability.en)
@@ -181,6 +207,7 @@ end)
 
 --  Handle in-game console commands via AitaAxed or aa
 windower.register_event('addon command', function (...)
+    -- windower.add_to_chat(100, 'addon command')
     local splitup = {...}
     if not splitup[1] then return end -- handles //aa
 
@@ -189,16 +216,25 @@ windower.register_event('addon command', function (...)
     local cmd = table.remove(splitup,1):lower()
     local cmd_args = {select(2, ...)}
 
+    -- settings.pos.x = tonumber(cmd_args[1])
+    -- settings.pos.y = tonumber(cmd_args[2])
+    -- config.save(settings)
+
+    -- windower.add_to_chat(100, cmd)
     if cmd == 'reload' or cmd == 'r' then
       windower.send_command('lua r aitaaxed')
     elseif cmd == 'clear' then
-      print("Clearing chat box")
+      print("Clearing dialogue box")
       if ui_info_box then
         ui_info_box:hide()
       end
     elseif cmd == 'help' or cmd == 'h' then
       local help_with = cmd_args[1]
-      print(help_with)
+      if help_with then
+        print(aa.help.get_help_for(help_with))
+      else
+        print(aa.help.show_available_commands())
+      end
     elseif aa.help.contains_update_function(cmd) then
     end
 end)
