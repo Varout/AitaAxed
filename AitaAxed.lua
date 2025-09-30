@@ -37,8 +37,8 @@ _addon.author = 'Varrout'
 _addon.version = '0.4'
 _addon.commands = {'AitaAxed', 'aa'}
 
--- 0.4 Second Update (Planned): Ability to update settings from in-game
---                              Ability to show all available commands in-game
+-- 0.5 (Planned): Ability to update settings from in-game
+--                Set up job-specific settings
 
 require('actions')
 require('chat')
@@ -72,17 +72,6 @@ local aita_map = aa.objects.get_aita_map()
 local gartell_map = aa.objects.get_gartell_map()
 
 
-
--- function refresh_ffxi_info()
---     local info = windower.ffxi.get_info()
---     for i,v in pairs(info) do
---         if i == 'zone' and res.zones[v] then
---             area_name = res.zones[v][language]
---         end
---     end
--- end
-
-
 function apply_text_colour(text_to_display, colour_to_use)
   if settings.font.use_colours then
     local rbg_colour_code = element_colour_map[colour_to_use]
@@ -98,7 +87,6 @@ function format_text_aita(ability_name)
   local element_str_sc   = ability_weaknesses_aita[ability_name]['skillchain']
 
   local display_text = ''
-
   if settings.show_ability_name then
     display_text = display_text .. ability_name .. ' | '
   end
@@ -111,7 +99,6 @@ end
 
 function format_text_gartell(ability_name)
   local element_str = ability_weaknesses_gartell[ability_name]
-
   local display_text = 'Hands: ' .. apply_text_colour(element_str, element_str)
 
   return display_text
@@ -122,8 +109,8 @@ function display_ui(text_to_display)
   local windower_settings = windower.get_windower_settings()
 
   ui_info_box = texts.new(ui_config)
-
   ui_info_box:text(text_to_display)
+
   if settings.auto_centre then
     local display_text_length = ux.core.MeasureTextElement(ui_info_box).w
 
@@ -141,7 +128,7 @@ end
 
 function show_test_text()
   local colour = aa.objects.get_random_colour()
-  print(colour)
+
   if ui_info_box then
     ui_info_box:hide()
     ui_info_shown = false
@@ -196,7 +183,6 @@ windower.register_event('action', function (act)
 
   -- React to incidents where you're the primary target or any action by an NPC
   if actor and actor.is_npc and actor.name ~= self.name and category == 7 then
-  -- if actor and (actor.is_npc or primarytarget.name == self.name) and actor.name ~= self.name and category == 7 then
     ability = res.monster_abilities[targets[1].actions[1].param] -- .en
     if ability and ability.en then
       aita_axed(actor.name, ability.en)
@@ -219,7 +205,6 @@ end)
 
 --  Handle in-game console commands via AitaAxed or aa
 windower.register_event('addon command', function (...)
-    -- windower.add_to_chat(100, 'addon command')
     local splitup = {...}
     if not splitup[1] then return end -- handles //aa
 
@@ -228,11 +213,6 @@ windower.register_event('addon command', function (...)
     local cmd = table.remove(splitup,1):lower()
     local cmd_args = {select(2, ...)}
 
-    -- settings.pos.x = tonumber(cmd_args[1])
-    -- settings.pos.y = tonumber(cmd_args[2])
-    -- config.save(settings)
-
-    -- windower.add_to_chat(100, cmd)
     if cmd == 'help' or cmd == 'h' then
       --  HELP
       local help_with = cmd_args[1]
