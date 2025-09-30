@@ -45,6 +45,15 @@ local THUNDER = 'Thunder'
 local LIGHT = 'Light'
 local DARK = 'Dark'
 
+local random_colours = {
+  STONE,
+  WATER,
+  AERO,
+  FIRE,
+  BLIZZARD,
+  THUNDER,
+}
+
 local defaults = {
   duration = nil,
   show_ability_name = nil,
@@ -183,4 +192,12 @@ end
 
 aa.objects.get_gartell_map = function()
   return gartell_map
+end
+
+
+aa.objects.get_random_colour = function()
+  local num_of_colours = #random_colours
+  local random_index = math.random(1, num_of_colours)
+
+  return random_colours[random_index]
 end
