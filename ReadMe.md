@@ -3,6 +3,7 @@
 **Contents**
 
 - [About](#about)
+- [Installation](#installation)
 - [Settings.xml](#settingsxml)
 - [Commands](#commands)
 - [Known Issues](#known-issues)
@@ -29,6 +30,16 @@ Shows the current direct elemental weakness and the associated skillchain that s
 When using an ability which causes hands to switch from Thunder to Wind or vice versa, the dialogue box appears on screen.
 
 [Top of Page](#aitaaxed)
+
+## Installation
+
+Just like other Windower add-ons, you need a folder in your Windower4/addons/ directory called "AitaAxed" with the main structure of the compressed archived kept the same.
+
+You _should_ be able to just extract the archive to your addons directory directly.
+
+    Note: This hasn't been tested with Ashita. It relies on the Windower API. So if you're trying to run this with Ashita, the results are unknown at this point.
+
+To load AitaAxed, you can add it to your `scripts/init.txt` after everything else, add it to your plugins list if you're using the plugins add-on, or just type `lua l aitaaxed` in your Windower terminal (Or `//lua l aitaaxed` using the in-game chat)
 
 ## Settings.xml
 
