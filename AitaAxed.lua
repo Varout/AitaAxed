@@ -33,12 +33,18 @@ Information on Development for Windower can be found here: https://github.com/Wi
 ]]
 
 _addon.name = 'AitaAxed'
-_addon.author = 'Varrout'
-_addon.version = '0.4'
+_addon.author = 'Varout'
+_addon.thanks = 'Carbonite, The Shed, Artimus'
+_addon.version = '0.5 beta'
 _addon.commands = {'AitaAxed', 'aa'}
 
 -- 0.5 (Planned): Ability to update settings from in-game
 --                Set up job-specific settings
+
+-- 0.5 Actual
+--  Ability to send Elemental Weakness to GearSwap
+--  Ability to add custom text boxes for abilities (See: ability_notification_stanard in objects.lua)
+--  When using a custom position (not centred), the text will cling to the side of the screen
 
 require('actions')
 require('chat')
@@ -61,10 +67,16 @@ local ui_info_box
 local ui_info_shown = false
 local ui_display_start = nil
 
-local settings = config.load(aa.objects.get_settings_defaults())
-local ui_config = aa.objects.get_ui_config(settings)
+local player_job = windower.ffxi.get_player().main_job
 
+local settings = config.load(aa.objects.get_settings_defaults(player_job))
+local ui_config = aa.objects.get_ui_config(settings, player_job)
+local base_x_pos = tonumber(ui_config.pos.x)
+
+local element_names = aa.objects.get_colours()
 local element_colour_map = aa.objects.get_element_colour_map()
+
+local standard_ability_map = aa.objects.get_standard_ability_map()
 
 local ability_weaknesses_aita = aa.objects.get_ability_weaknesses_aita()
 local ability_weaknesses_gartell = aa.objects.get_ability_weaknesses_gartell()
@@ -105,21 +117,52 @@ function format_text_gartell(ability_name)
 end
 
 
+function format_text_standard(actor_name, ability_en)
+  local element_str = standard_ability_map[actor_name][ability_en]
+  local display_text = apply_text_colour(ability_en, element_str)
+
+  return display_text
+end
+
+
 function display_ui(text_to_display)
+  local x_pos = base_x_pos
+  local y_pos = ui_config.pos.y
+  local padding = ui_config.padding * 2
+
   local windower_settings = windower.get_windower_settings()
+
+  local use_auto_center = settings.auto_centre
+  if settings[player_job] and settings[player_job].auto_centre ~= nil then
+    use_auto_center = settings[player_job].auto_centre
+  end
 
   ui_info_box = texts.new(ui_config)
   ui_info_box:text(text_to_display)
 
-  if settings.auto_centre then
-    local display_text_length = ux.core.MeasureTextElement(ui_info_box).w
+  local display_text_length = ux.core.MeasureTextElement(ui_info_box).w + padding
 
-    ui_info_box:pos(
-      (windower_settings.ui_x_res - display_text_length) / 2.0,
-      settings.pos.y
-    )
+  if use_auto_center then
+    x_pos = (windower_settings.ui_x_res - display_text_length) / 2.0
+
+    -- ui_info_box:pos(
+    --   (windower_settings.ui_x_res - display_text_length) / 2.0,
+    --   y_pos
+    -- )
+  else
+
+    local x_pos_end = x_pos + display_text_length
+    if (x_pos_end > windower_settings.ui_x_res) then
+      x_pos = windower_settings.ui_x_res - display_text_length
+    end
+
+    -- ui_info_box:pos(
+    --   x_pos,
+    --   y_pos
+    -- )
   end
 
+  ui_info_box:pos(x_pos, y_pos)
   ui_info_box:show()
   ui_display_start = os.clock()
   ui_info_shown = true
@@ -140,12 +183,28 @@ end
 
 
 --[[
+  If GearSwap is available, imports it to be able to send a command
+  directly to a list called SortieWeakness, which would have a list
+  of elements that are a weakness for the specific NM
+]]
+function send_element_weakness_to_gearswap(element_weakness)
+  --  If update_gearswap is set and true, import GearSwap and send the command
+  if element_weakness ~= nil and element_weakness ~= '' and settings.update_gearswap then
+    windower.send_command(
+      'gs c set SortieWeakness ' .. element_weakness
+    )
+  end
+end
+
+
+--[[
   The equivalent to main(), just don't make it call itself
   It's not supposed to be recursive
 ]]
 function aita_axed(actor_name, ability_en)
   if (aita_map[actor_name]    and ability_weaknesses_aita[ability_en]) or
-     (gartell_map[actor_name] and ability_weaknesses_gartell[ability_en]) then
+     (gartell_map[actor_name] and ability_weaknesses_gartell[ability_en]) or
+     (standard_ability_map[actor_name] and standard_ability_map[actor_name][ability_en]) then
 
     -- If the UI is up, hide it
     if ui_info_box then
@@ -153,12 +212,23 @@ function aita_axed(actor_name, ability_en)
       ui_info_shown = false
     end
 
-    -- Get the text to display
+    -- Get the text to display and weakness element
     local text_to_display = ''
-    if aita_map[actor_name] then
+    local element_weakness = ''
+
+    if standard_ability_map[actor_name] and standard_ability_map[actor_name][ability_en] then
+      text_to_display = format_text_standard(actor_name, ability_en)
+
+    elseif aita_map[actor_name] then
       text_to_display = format_text_aita(ability_en)
+      element_weakness = ability_weaknesses_aita[ability_en]['element']
+
+      send_element_weakness_to_gearswap(element_weakness)
     elseif gartell_map[actor_name] then
       text_to_display = format_text_gartell(ability_en)
+      element_weakness = ability_weaknesses_gartell[ability_en]
+
+      send_element_weakness_to_gearswap(element_weakness)
     end
 
     display_ui(text_to_display)
@@ -241,5 +311,25 @@ windower.register_event('addon command', function (...)
     elseif cmd == 'test' then
       --  Show test text for positioning
       show_test_text()
+    -- elseif cmd == 'save' then
+    --   if ui_info_box then
+    --     if cmd_args[1] and aa.objects.accepted_job_str(cmd_args[1]) then
+    --       print('save for ' .. cmd_args[1])
+    --       --  Save job-specific
+    --     else
+    --       print('save global')
+    --       config.save(settings)
+    --       --  Save global
+    --     end
+    --   end
+    elseif cmd == 'config' then
+      local pos_x, pos_y = ui_info_box:pos()
+      print(pos_x)
+      print(pos_y)
     end
 end)
+
+
+-- function update_settings(settings, name, job)
+
+-- end
