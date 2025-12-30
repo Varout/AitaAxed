@@ -2,7 +2,8 @@
 <settings>
     <global>
         <auto_centre>true</auto_centre>
-        <duration>18</duration>
+        <display_in_chat>false</display_in_chat>
+        <duration>0</duration>
         <show_ability_name>false</show_ability_name> <!-- For Degei & Aita, toggles whether to show ability name -->
         <background>
             <opacity>75</opacity> <!-- 75 is the same as the default value for EquipViewer -->
@@ -16,5 +17,15 @@
             <x>700</x> <!-- Ignored if auto_centre is true -->
             <y>100</y>
         </pos>
+        <update_gearswap>false</update_gearswap>
+        <!-- Job specific settings as overrides -->
+        <whm>
+            <auto_centre>false</auto_centre>
+            <pos>
+                <x>1850</x>
+                <y>650</y>
+            </pos>
+            <update_gearswap>false</update_gearswap>
+        </whm>
     </global>
 </settings>
