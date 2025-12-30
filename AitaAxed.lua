@@ -32,17 +32,17 @@ Information on Development for Windower can be found here: https://github.com/Wi
 
 ]]
 
-_addon.name = 'AitaAxed'
-_addon.author = 'Varout'
-_addon.thanks = 'Carbonite, The Shed, Artimus'
-_addon.version = '0.5'
+_addon.name     = 'AitaAxed'
+_addon.author   = 'Varout'
+_addon.thanks   = 'Carbonite, The Shed, Artimus'
+_addon.version  = '0.5'
 _addon.commands = {'AitaAxed', 'aa'}
 
 -- Version: 0.6 (Planned): Ability to update settings from in-game
 
 -- Version: 0.5
 --  Ability to send Elemental Weakness to GearSwap (state.SortieWeakness)
---  Ability to add custom text boxes for abilities (See: ability_notification_stanard in objects.lua)
+--  Ability to add custom text boxes for abilities (See: ability_notification_standard in objects.lua)
 --  When using a custom position (not centred), the text will cling to the side of the screen
 --  Job specific settings can be set up and read from the settings.xml file
 --  General clean up
@@ -82,6 +82,9 @@ local double_weakness_map = aa.objects.get_double_weakness_map()
 local gartell_map = aa.objects.get_gartell_map()
 
 
+--[[
+  Applying the text colour to a given string
+]]
 function apply_text_colour(text_to_display, colour_to_use)
   if settings.font.use_colours then
     local rbg_colour_code = element_colour_map[colour_to_use]
@@ -92,6 +95,9 @@ function apply_text_colour(text_to_display, colour_to_use)
 end
 
 
+--[[
+  Text formatting for: double_weakness_map
+]]
 function format_text_aita(actor_name, ability_name)
   local ability_info = double_weakness_map[actor_name][ability_name]
   local element_str_nuke = ability_info['element']
@@ -108,6 +114,9 @@ function format_text_aita(actor_name, ability_name)
 end
 
 
+--[[
+  Text formatting for: gartell_map
+]]
 function format_text_gartell(actor_name, ability_name)
   local element_str = gartell_map[actor_name][ability_name]
   local display_text = 'Hands: ' .. apply_text_colour(element_str, element_str)
@@ -116,6 +125,9 @@ function format_text_gartell(actor_name, ability_name)
 end
 
 
+--[[
+  Text formatting for: standard_ability_map
+]]
 function format_text_standard(actor_name, ability_name)
   local element_str = standard_ability_map[actor_name][ability_name]
   local display_text = apply_text_colour(ability_name, element_str)
@@ -124,6 +136,11 @@ function format_text_standard(actor_name, ability_name)
 end
 
 
+--[[
+  Set up text with colours and displays it on screen.
+  If specific job settings exist in the settings.xml, they will
+  be used in place of the generalised settings
+]]
 function display_ui(text_to_display)
   local x_pos = base_x_pos
   local y_pos = ui_config.pos.y
@@ -160,6 +177,10 @@ function display_ui(text_to_display)
 end
 
 
+--[[
+  Shows an example text box with your settings showing:
+  "Hello World" with world being in a random colour
+]]
 function show_test_text()
   local colour = aa.objects.get_random_colour()
 
@@ -174,9 +195,8 @@ end
 
 
 --[[
-  If GearSwap is available, imports it to be able to send a command
-  directly to a list called SortieWeakness, which would have a list
-  of elements that are a weakness for the specific NM
+  If turned on in settings.xml, sents a command through Windower
+  to update the state.SortieWeakness list to be the given element
 ]]
 function send_element_weakness_to_gearswap(element_weakness)
   --  If update_gearswap is set and true, import GearSwap and send the command
@@ -252,6 +272,9 @@ windower.register_event('action', function (act)
 end)
 
 
+--[[
+  Used for timing out and hiding UI
+]]
 windower.register_event('prerender', function()
   --  Handle time out of UI
   if settings.duration ~= 0 and ui_info_shown and ui_display_start then
@@ -264,47 +287,49 @@ windower.register_event('prerender', function()
 end)
 
 
---  Handle in-game console commands via AitaAxed or aa
+--[[
+  Handle in-game console commands via AitaAxed or aa
+]]
 windower.register_event('addon command', function (...)
-    local splitup = {...}
-    if not splitup[1] then return end -- handles //aa
+  local splitup = {...}
+  if not splitup[1] then return end -- handles //aa
 
-    for i, v in pairs(splitup) do splitup[i] = windower.from_shift_jis(windower.convert_auto_trans(v)) end
+  for i, v in pairs(splitup) do splitup[i] = windower.from_shift_jis(windower.convert_auto_trans(v)) end
 
-    local cmd = table.remove(splitup,1):lower()
-    local cmd_args = {select(2, ...)}
+  local cmd = table.remove(splitup,1):lower()
+  local cmd_args = {select(2, ...)}
 
-    if cmd == 'help' or cmd == 'h' then
-      --  HELP
-      local help_with = cmd_args[1]
-      if help_with then
-        --  Specific function
-        print(aa.help.get_help_for(help_with))
-      else
-        --  Everything
-        print(aa.help.show_available_commands())
-      end
-    elseif aa.help.contains_update_function(cmd) then
-      --  Functions with updates
-      print(cmd)
-    elseif cmd == 'reload' or cmd == 'r' then
-      --  Reload AitaAxed
-      windower.send_command('lua r aitaaxed')
-    elseif cmd == 'unload' or cmd == 'u' then
-      --  Unload AitaAxed
-      windower.send_command('lua u aitaaxed')
-    elseif cmd == 'clear' or cmd == 'c' then
-      --  Clear dialogue box
-      print("Clearing dialogue box")
-      if ui_info_box then
-        ui_info_box:hide()
-      end
-    elseif cmd == 'test' then
-      --  Show test text for positioning
-      show_test_text()
-    elseif cmd == 'config' then
-      local pos_x, pos_y = ui_info_box:pos()
-      print(pos_x)
-      print(pos_y)
+  if cmd == 'help' or cmd == 'h' then
+    --  HELP
+    local help_with = cmd_args[1]
+    if help_with then
+      --  Specific function
+      print(aa.help.get_help_for(help_with))
+    else
+      --  Everything
+      print(aa.help.show_available_commands())
     end
+  elseif aa.help.contains_update_function(cmd) then
+    --  Functions with updates
+    print(cmd)
+  elseif cmd == 'reload' or cmd == 'r' then
+    --  Reload AitaAxed
+    windower.send_command('lua r aitaaxed')
+  elseif cmd == 'unload' or cmd == 'u' then
+    --  Unload AitaAxed
+    windower.send_command('lua u aitaaxed')
+  elseif cmd == 'clear' or cmd == 'c' then
+    --  Clear dialogue box
+    print("Clearing dialogue box")
+    if ui_info_box then
+      ui_info_box:hide()
+    end
+  elseif cmd == 'test' then
+    --  Show test text for positioning
+    show_test_text()
+  elseif cmd == 'config' then
+    local pos_x, pos_y = ui_info_box:pos()
+    print(pos_x)
+    print(pos_y)
+  end
 end)

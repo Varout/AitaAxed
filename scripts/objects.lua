@@ -128,10 +128,17 @@ local ability_weaknesses_gartell = {
 }
 
 --  Standard Outputs for "enemy_name: abiity_name"
+--  Here the element is used to define the text colour
 local ability_notification_standard = {
-  ['Esurient Botulus'] = {['Slimy Proposal'] = AERO},
+  ['Esurient Botulus'] = {['Slimy Proposal'] = AERO,},
+
   --  Example and testing fodder: Mr. Apex Eft
-  ['Apex Eft'] = {['Geist Wall'] = AERO, ['Nimble Snap'] = AERO, ['Numbing Noise'] = AERO, ['Toxic Spit'] = AERO, ['Cyclotail'] = AERO},
+  ['Apex Eft'] = {
+    ['Geist Wall']    = AERO,
+    ['Nimble Snap']   = THUNDER,
+    ['Numbing Noise'] = AERO,
+    ['Toxic Spit']    = THUNDER,
+    ['Cyclotail']     = AERO,},
 }
 
 --  double_weakness_map
