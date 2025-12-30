@@ -18,26 +18,6 @@
             <y>100</y>
         </pos>
         <update_gearswap>false</update_gearswap>
-    </global>
-
-    <Varrout>
-        <auto_centre>true</auto_centre>
-        <display_in_chat>false</display_in_chat>
-        <duration>18</duration>
-        <show_ability_name>false</show_ability_name>
-        <background>
-            <opacity>75</opacity>
-        </background>
-        <font>
-            <size>50</size>
-            <use_colours>true</use_colours>
-        </font>
-        <padding>25</padding>
-        <pos>
-            <x>200</x>
-            <y>100</y>
-        </pos>
-        <update_gearswap>false</update_gearswap>
         <!-- Job specific settings as overrides -->
         <whm>
             <auto_centre>false</auto_centre>
@@ -47,5 +27,5 @@
             </pos>
             <update_gearswap>false</update_gearswap>
         </whm>
-    </Varrout>
+    </global>
 </settings>
