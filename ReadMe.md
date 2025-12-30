@@ -6,9 +6,9 @@
 - [Installation](#installation)
 - [Settings.xml](#settingsxml)
 - [Commands](#commands)
+- [GearSwap Integration](#gearswap-integration)
 - [Known Issues](#known-issues)
 - [Media](#media)
-  - [Default Settings](#default-settings)
 - [Links](#links)
 - [Copyright](#copyright)
 
@@ -54,6 +54,7 @@ To load AitaAxed, you can add it to your `scripts/init.txt` after everything els
 | font: `use_colours` | `Boolean` | `true` | When `true`, the elemental nukes are coloured with the corresponding colour. Stone: yellow, Water: blue, etc. When `false`, all text is white. |
 | pos: `x`        | `Integer`     | `700`   | The x-position of the top left corner of the text box from the left-hand-side of the window. Ignored if `auto_centre` is set to `true`.      |
 | pos: `y`       | `Integer`      | `100`   | The y-position of the top left corner of the text box from the top of the window.                                                            |
+| `update_gearswap` | `Boolean` | `false` | Sends the current enemy's weakness to GearSwap. The weakness value is send to the state: SortieWeakness |
 
 [Top of Page](#aitaaxed)
 
@@ -79,6 +80,25 @@ To load AitaAxed, you can add it to your `scripts/init.txt` after everything els
 | `pos x` (soon) | n/a | Sets the x-position value.<br/>Example: `aa pos x 800` |
 | `pos y` (soon) | n/a | Sets the y-position value.<br/>Example: `aa pos y 50` |
 
+[Top of Page](#aitaaxed)
+
+## GearSwap Integration
+
+New with version 0.5 is the ability to update GearSwap (default: `false`) with the current enemy weakness based on the previous ability.  This relies on the enemy to use an ability so that AitaAxed knows what to use.  With Leshonn and Gartell this could be quite annoying because it's easy to go a full fight without them ever using an ability which makes them swap hands.
+
+In your GearSwap lua under `user_setup()` add the following two lines:
+```lua
+state.SortieWeakness = M{['description'] = 'Elemental Weakness'}
+state.SortieWeakness:options('Stone', 'Water', 'Fire', 'Aero', 'Blizzard', 'Thunder')
+```
+
+Then you could put together a custom command which casts a tier 1 spell based on the value of `SortieWeakness` so that you can just push one macro or shortcut the whole time.
+
+You should see the state change in your chat log. If you use a UI in-game to track your current states, you could have this displayed here so you can see it or override it.
+
+Example screenshots of the states here: https://github.com/Varout/GearSwapLibs
+You could even colour-code things like in my SCH UI for the self-skillchains.
+
 ## Known Issues
 
 When there is a tonne of lag, sometimes it doesn't pick up the TP move. Currently I have no idea how to resolve this or if it is able to be resolved.
@@ -87,9 +107,7 @@ When there is a tonne of lag, sometimes it doesn't pick up the TP move. Currentl
 
 ## Media
 
-### Default Settings
-
-#### Degei & Aita
+### Degei & Aita
 
 <img src="img/aero-light.png" alt="Aero/Light" style="height: 60px;">
 <img src="img/fire-light.png" alt="Fire/Light" style="height: 60px;">
@@ -97,7 +115,7 @@ When there is a tonne of lag, sometimes it doesn't pick up the TP move. Currentl
 <img src="img/stone-dark.png" alt="Stone/Dark" style="height: 60px;">
 <img src="img/water-dark.png" alt="Water/Dark" style="height: 60px;">
 
-#### Leshonn & Gartell
+### Leshonn & Gartell
 
 <img src="img/hands-thunder.png" alt="Hands: Thunder" style="height: 60px;">
 <img src="img/hands-wind.png" alt="Hands: Wind" style="height: 60px;">
