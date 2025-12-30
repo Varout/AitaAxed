@@ -35,16 +35,17 @@ Information on Development for Windower can be found here: https://github.com/Wi
 _addon.name = 'AitaAxed'
 _addon.author = 'Varout'
 _addon.thanks = 'Carbonite, The Shed, Artimus'
-_addon.version = '0.5 beta'
+_addon.version = '0.5'
 _addon.commands = {'AitaAxed', 'aa'}
 
--- 0.5 (Planned): Ability to update settings from in-game
---                Set up job-specific settings
+-- Version: 0.6 (Planned): Ability to update settings from in-game
 
--- 0.5 Actual
---  Ability to send Elemental Weakness to GearSwap
+-- Version: 0.5
+--  Ability to send Elemental Weakness to GearSwap (state.SortieWeakness)
 --  Ability to add custom text boxes for abilities (See: ability_notification_stanard in objects.lua)
 --  When using a custom position (not centred), the text will cling to the side of the screen
+--  Job specific settings can be set up and read from the settings.xml file
+--  General clean up
 
 require('actions')
 require('chat')
@@ -77,10 +78,7 @@ local element_names = aa.objects.get_colours()
 local element_colour_map = aa.objects.get_element_colour_map()
 
 local standard_ability_map = aa.objects.get_standard_ability_map()
-
-local ability_weaknesses_aita = aa.objects.get_ability_weaknesses_aita()
-local ability_weaknesses_gartell = aa.objects.get_ability_weaknesses_gartell()
-local aita_map = aa.objects.get_aita_map()
+local double_weakness_map = aa.objects.get_double_weakness_map()
 local gartell_map = aa.objects.get_gartell_map()
 
 
@@ -94,9 +92,10 @@ function apply_text_colour(text_to_display, colour_to_use)
 end
 
 
-function format_text_aita(ability_name)
-  local element_str_nuke = ability_weaknesses_aita[ability_name]['element']
-  local element_str_sc   = ability_weaknesses_aita[ability_name]['skillchain']
+function format_text_aita(actor_name, ability_name)
+  local ability_info = double_weakness_map[actor_name][ability_name]
+  local element_str_nuke = ability_info['element']
+  local element_str_sc   = ability_info['skillchain']
 
   local display_text = ''
   if settings.show_ability_name then
@@ -109,17 +108,17 @@ function format_text_aita(ability_name)
 end
 
 
-function format_text_gartell(ability_name)
-  local element_str = ability_weaknesses_gartell[ability_name]
+function format_text_gartell(actor_name, ability_name)
+  local element_str = gartell_map[actor_name][ability_name]
   local display_text = 'Hands: ' .. apply_text_colour(element_str, element_str)
 
   return display_text
 end
 
 
-function format_text_standard(actor_name, ability_en)
-  local element_str = standard_ability_map[actor_name][ability_en]
-  local display_text = apply_text_colour(ability_en, element_str)
+function format_text_standard(actor_name, ability_name)
+  local element_str = standard_ability_map[actor_name][ability_name]
+  local display_text = apply_text_colour(ability_name, element_str)
 
   return display_text
 end
@@ -145,21 +144,13 @@ function display_ui(text_to_display)
   if use_auto_center then
     x_pos = (windower_settings.ui_x_res - display_text_length) / 2.0
 
-    -- ui_info_box:pos(
-    --   (windower_settings.ui_x_res - display_text_length) / 2.0,
-    --   y_pos
-    -- )
   else
-
+    --  Line the right side of the text box up with the right side of your game
     local x_pos_end = x_pos + display_text_length
     if (x_pos_end > windower_settings.ui_x_res) then
       x_pos = windower_settings.ui_x_res - display_text_length
     end
 
-    -- ui_info_box:pos(
-    --   x_pos,
-    --   y_pos
-    -- )
   end
 
   ui_info_box:pos(x_pos, y_pos)
@@ -202,9 +193,9 @@ end
   It's not supposed to be recursive
 ]]
 function aita_axed(actor_name, ability_en)
-  if (aita_map[actor_name]    and ability_weaknesses_aita[ability_en]) or
-     (gartell_map[actor_name] and ability_weaknesses_gartell[ability_en]) or
-     (standard_ability_map[actor_name] and standard_ability_map[actor_name][ability_en]) then
+  if (standard_ability_map[actor_name] and standard_ability_map[actor_name][ability_en]) or
+     (double_weakness_map[actor_name]  and double_weakness_map[actor_name][ability_en]) or
+     (gartell_map[actor_name]          and gartell_map[actor_name][ability_en]) then
 
     -- If the UI is up, hide it
     if ui_info_box then
@@ -219,14 +210,14 @@ function aita_axed(actor_name, ability_en)
     if standard_ability_map[actor_name] and standard_ability_map[actor_name][ability_en] then
       text_to_display = format_text_standard(actor_name, ability_en)
 
-    elseif aita_map[actor_name] then
-      text_to_display = format_text_aita(ability_en)
-      element_weakness = ability_weaknesses_aita[ability_en]['element']
+    elseif double_weakness_map[actor_name] then
+      text_to_display = format_text_aita(actor_name, ability_en)
+      element_weakness = double_weakness_map[actor_name][ability_en]['element']
 
       send_element_weakness_to_gearswap(element_weakness)
     elseif gartell_map[actor_name] then
-      text_to_display = format_text_gartell(ability_en)
-      element_weakness = ability_weaknesses_gartell[ability_en]
+      text_to_display = format_text_gartell(actor_name, ability_en)
+      element_weakness = gartell_map[actor_name][ability_en]
 
       send_element_weakness_to_gearswap(element_weakness)
     end
@@ -311,25 +302,9 @@ windower.register_event('addon command', function (...)
     elseif cmd == 'test' then
       --  Show test text for positioning
       show_test_text()
-    -- elseif cmd == 'save' then
-    --   if ui_info_box then
-    --     if cmd_args[1] and aa.objects.accepted_job_str(cmd_args[1]) then
-    --       print('save for ' .. cmd_args[1])
-    --       --  Save job-specific
-    --     else
-    --       print('save global')
-    --       config.save(settings)
-    --       --  Save global
-    --     end
-    --   end
     elseif cmd == 'config' then
       local pos_x, pos_y = ui_info_box:pos()
       print(pos_x)
       print(pos_y)
     end
 end)
-
-
--- function update_settings(settings, name, job)
-
--- end

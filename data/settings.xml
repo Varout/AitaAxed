@@ -38,6 +38,7 @@
             <y>100</y>
         </pos>
         <update_gearswap>false</update_gearswap>
+        <!-- Job specific settings as overrides -->
         <whm>
             <auto_centre>false</auto_centre>
             <pos>
@@ -46,14 +47,5 @@
             </pos>
             <update_gearswap>false</update_gearswap>
         </whm>
-        <!-- <drg>
-            <auto_centre>false</auto_centre>
-            <pos>
-                <x>1850</x>
-                <y>650</y>
-            </pos>
-            <update_gearswap>false</update_gearswap>
-        </drg> -->
     </Varrout>
-
 </settings>

@@ -38,7 +38,6 @@ aa.objects = aa.objects or {}
 local STONE = 'Stone'
 local WATER = 'Water'
 local AERO = 'Aero'
--- local WIND = 'Wind'
 local FIRE = 'Fire'
 local BLIZZARD = 'Blizzard'
 local THUNDER = 'Thunder'
@@ -103,6 +102,16 @@ local ui_config = {
   },
 }
 
+--  Aminon
+local ability_weaknesses_aminon = {
+  ['Frozen Blood']        = {['element'] = FIRE,      ['skillchain'] = LIGHT},
+  ['Demonfire']           = {['element'] = WATER,     ['skillchain'] = DARK},
+  ['Torrential Pain']     = {['element'] = THUNDER,   ['skillchain'] = LIGHT},
+  ['Ceaseless Surge']     = {['element'] = STONE,     ['skillchain'] = DARK},
+  ['Ensepulcher']         = {['element'] = AERO,      ['skillchain'] = LIGHT},
+  ['Blast of Reticence']  = {['element'] = BLIZZARD,  ['skillchain'] = DARK},
+}
+
 --  Degei & Aita
 local ability_weaknesses_aita = {
   ['Icy Grasp']       = {['element'] = FIRE,    ['skillchain'] = LIGHT},
@@ -110,13 +119,6 @@ local ability_weaknesses_aita = {
   ['Flashflood']      = {['element'] = THUNDER, ['skillchain'] = LIGHT},
   ['Fulminous Smash'] = {['element'] = STONE,   ['skillchain'] = DARK},
   ['Eroding Flesh']   = {['element'] = AERO,    ['skillchain'] = LIGHT},
-
-  --  Testing
-  ['Cyclotail']       = {['element'] = FIRE,    ['skillchain'] = LIGHT},
-  ['Geist Wall']      = {['element'] = WATER,   ['skillchain'] = DARK},
-  ['Toxic Spit']      = {['element'] = THUNDER, ['skillchain'] = LIGHT},
-  ['Numbing Noise']   = {['element'] = STONE,   ['skillchain'] = DARK},
-  ['Nimble Snap']     = {['element'] = AERO,    ['skillchain'] = LIGHT},
 }
 
 --  Leshonn & Gartell
@@ -127,15 +129,17 @@ local ability_weaknesses_gartell = {
 
 --  Standard Outputs for "enemy_name: abiity_name"
 local ability_notification_standard = {
-  ['Esurient Botulus'] = { ['Slimy Proposal'] = AERO },
-  ['Apex Eft'] = { ['Geist Wall'] = AERO, ['Nimble Snap'] = AERO, ['Numbing Noise'] = AERO, ['Toxic Spit'] = AERO, ['Cyclotail'] = AERO },
+  ['Esurient Botulus'] = {['Slimy Proposal'] = AERO},
+  --  Example and testing fodder: Mr. Apex Eft
+  ['Apex Eft'] = {['Geist Wall'] = AERO, ['Nimble Snap'] = AERO, ['Numbing Noise'] = AERO, ['Toxic Spit'] = AERO, ['Cyclotail'] = AERO},
 }
 
-local aita_map = {
+--  double_weakness_map
+local double_weakness_map = {
+-- local aita_aminon_map = {
   ['Degei']    = ability_weaknesses_aita,
   ['Aita']     = ability_weaknesses_aita,
-
-  -- ['Apex Eft'] = ability_weaknesses_aita,
+  ['Aminon']   = ability_weaknesses_aminon,
 }
 
 local gartell_map = {
@@ -144,14 +148,14 @@ local gartell_map = {
 }
 
 local element_colour_map = {
-  [STONE]    = '(255,255,  0)',
-  [WATER]    = '(  0,  0,255)',
-  [AERO]     = '(  0,255,128)',
-  [FIRE]     = '(255,  0,  0)',
-  [BLIZZARD] = '(  0,255,255)',
-  [THUNDER]  = '(255, 85,230)',
-  [LIGHT]    = '(255,255,255)',
-  [DARK]     = '(255,255,255)',
+  [STONE]    = '(255,255,  0)',   --  Yellow
+  [WATER]    = '(  0,  0,255)',   --  Blue
+  [AERO]     = '(  0,255,128)',   --  Green
+  [FIRE]     = '(255,  0,  0)',   --  Red
+  [BLIZZARD] = '(  0,255,255)',   --  Lighter blue
+  [THUNDER]  = '(255, 85,230)',   --  Purple/magenta
+  [LIGHT]    = '(255,255,255)',   --  White
+  [DARK]     = '(255,255,255)',   --  White
 }
 
 local job_strings = S{
@@ -226,18 +230,8 @@ aa.objects.get_standard_ability_map = function()
 end
 
 
-aa.objects.get_ability_weaknesses_aita = function()
-  return ability_weaknesses_aita
-end
-
-
-aa.objects.get_ability_weaknesses_gartell = function()
-  return ability_weaknesses_gartell
-end
-
-
-aa.objects.get_aita_map = function()
-  return aita_map
+aa.objects.get_double_weakness_map = function()
+  return double_weakness_map
 end
 
 
